@@ -6,10 +6,18 @@ class Board extends Component {
     constructor(props) {
         super(props);
 
+        var tmpBoard = Array.from(new Array(props.squaresPerWidth * props.squaresPerWidth));
+
         this.state = {
+            board: tmpBoard,
             startPositionSet: false,
             endPositionSet: false,
             startPosition: -1,
+            endPosition: -1,
+            selectStartPosition: true,
+            selectEndPosition: false,
+            selectObstaclePosition: false,
+            boardUpdateNeeded: true,
         };
 
         this.typeSelectionChange = this.typeSelectionChange.bind(this);
@@ -196,6 +204,11 @@ class Board extends Component {
         this.props.handleUpdateState({
             nextItemIndex: newIndex
         });
+    }
+
+    convertCoordinatesToPosition = (x, y, boardWidth, squaresPerWidth) => {
+        var scale = boardWidth / squaresPerWidth;
+        return Math.floor(x / scale) + squaresPerWidth * Math.floor(y / scale);
     }
 
     render() {

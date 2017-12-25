@@ -10,19 +10,11 @@ class App extends Component {
         super(props);
 
         var tmpSquaresPerWidth = 10;
-        var tmpBoard = Array.from(new Array(tmpSquaresPerWidth * tmpSquaresPerWidth));
 
         this.state = {
             squaresPerWidth: tmpSquaresPerWidth,
             boardWidth: 400,
-            board: tmpBoard,
-            startPosition: -1,
-            endPosition: -1,
             pathResult: [],
-            selectStartPosition: true,
-            selectEndPosition: false,
-            selectObstaclePosition: false,
-            boardUpdateNeeded: true,
             nextItemIndex: 0,
             timerSet: false
         };
@@ -34,14 +26,9 @@ class App extends Component {
         this.resetApplication = this.resetApplication.bind(this);
         this.handleSquareNumberChange = this.handleSquareNumberChange.bind(this);
         this.handleUpdateState = this.handleUpdateState.bind(this);
-        this.convertCoordinatesToPosition = this.convertCoordinatesToPosition.bind(this);
         this.manhattanDistance = this.manhattanDistance.bind(this);
     }
 
-    convertCoordinatesToPosition(x, y) {
-        var scale = this.state.boardWidth / this.state.squaresPerWidth;
-        return Math.floor(x / scale) + this.state.squaresPerWidth * Math.floor(y / scale);
-    }
 
     updateStartPosition(index) {
         const tmpBoard = this.state.board;
