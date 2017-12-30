@@ -6,23 +6,10 @@ class Board extends Component {
     constructor(props) {
         super(props);
 
-        var tmpBoard = Array.from(new Array(props.squaresPerWidth * props.squaresPerWidth));
-
-        this.state = {
-            board: tmpBoard,
-            startPositionSet: false,
-            endPositionSet: false,
-            startPosition: -1,
-            endPosition: -1,
-            selectStartPosition: true,
-            selectEndPosition: false,
-            selectObstaclePosition: false,
-            boardUpdateNeeded: true,
-        };
-
         this.typeSelectionChange = this.typeSelectionChange.bind(this);
         this.squareNumberSelectionChange = this.squareNumberSelectionChange.bind(this);
         this.handleReset = this.handleReset.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
     }
 
     onMouseMove(e) {
@@ -39,27 +26,31 @@ class Board extends Component {
             return;
         }
 
-        if (this.props.selectStartPosition && !this.state.startPositionSet) {
-            this.setState({startPositionSet: true}, () => this.props.updateStartPosition(convertedCoordinates));
+        if (this.props.selectStartPosition && !this.props.startPositionSet) {
+            this.updateStartPosition(convertedCoordinates);
         }
-        else if (this.props.selectEndPosition && !this.state.endPositionSet) {
-            this.setState({endPositionSet: true});
-            this.props.handleUpdateState({
-                selectStartPosition: false,
-                selectObstaclePosition: true,
-                selectEndPosition: false
-            });
-            this.props.updateEndPosition(convertedCoordinates);
+        else if (this.props.selectEndPosition && !this.props.endPositionSet) {
+            this.updateEndPosition(convertedCoordinates);
         }
         else if (this.props.selectObstaclePosition) {
-            this.props.updateObstaclePosition(convertedCoordinates);
+            this.updateObstaclePosition(convertedCoordinates);
         }
     }
 
+    updateStartPosition(index) {
+        this.props.updateStartPosition(index);
+    }
+
+    updateEndPosition(index) {
+        this.props.updateEndPosition(index);
+    }
+
+    updateObstaclePosition(index) {
+        this.props.updateObstaclePosition(index);
+    }
+
     componentDidMount() {
-        if (this.props.boardUpdateNeeded) {
-            this.createGridPattern();
-        }
+        this.createGridPattern();
     }
 
     componentWillUpdate() {
@@ -82,19 +73,14 @@ class Board extends Component {
             }
         }
 
-        if (this.props.pathResult !== null && this.props.pathResult.length > 0 && this.timerID === undefined) {
-
-            this.props.handleUpdateState({nextItemIndex: this.props.pathResult.length - 2}, () => {
-                    if (this.timerID === undefined) {
-                        this.timerID = setInterval(
-                            () => this.drawPathResult(),
-                            100
-                        );
-                        this.props.handleUpdateState({timerSet: true});
-                    }
-                }
-            );
-
+        if (this.props.pathResult !== null && this.props.pathResult.length > 0 && this.props.timerSet === false) {
+            this.props.handleTimerCreation();
+            if (this.timerID === undefined) {
+                this.timerID = setInterval(
+                    () => this.drawPathResult(),
+                    100
+                );
+            }
         }
     }
 
@@ -119,6 +105,33 @@ class Board extends Component {
         }
 
         canvasContext.stroke();
+
+        this.props.gridUpdated();
+    }
+
+    drawPathResult() {
+        const pathResult = this.props.pathResult;
+        const pathResultLength = pathResult.length;
+        const currentIndex = this.props.nextItemIndex;
+
+        let newIndex = 0;
+
+        if (currentIndex === 0) {
+            this.createSquare(pathResult[currentIndex + 1], 'pink');
+            clearInterval(this.timerID);
+        }
+        else if (currentIndex === pathResultLength - 2) {
+            this.createSquare(pathResult[currentIndex], 'red');
+            newIndex = currentIndex - 1;
+        }
+        else {
+            this.createSquare(pathResult[currentIndex + 1], 'pink');
+            this.createSquare(pathResult[currentIndex], 'red');
+            newIndex = currentIndex - 1;
+        }
+
+        this.props.updateNextItemIndex(newIndex);
+
     }
 
     createSquare(i, color) {
@@ -137,31 +150,18 @@ class Board extends Component {
 
     typeSelectionChange(value) {
         if (value === 0) {
-            this.props.handleUpdateState(
-                {
-                    selectStartPosition: true,
-                    selectObstaclePosition: false,
-                    selectEndPosition: false
-                });
+            this.props.selectingStartPosition();
         }
         else if (value === 1) {
-            this.props.handleUpdateState({
-                selectStartPosition: false,
-                selectObstaclePosition: true,
-                selectEndPosition: false
-            });
+            this.props.selectingObstaclePosition();
         }
         else if (value === 2)
-            this.props.handleUpdateState({
-                selectStartPosition: false,
-                selectObstaclePosition: false,
-                selectEndPosition: true
-            });
+            this.props.selectingEndPosition();
     }
 
 
     squareNumberSelectionChange(newSquareNumber) {
-        this.props.handleUpdateState({boardUpdateNeeded: true}, () => this.props.handleSquareNumberChange(newSquareNumber));
+        this.props.handleSquareNumberChange(newSquareNumber);
     }
 
     handleReset() {
@@ -178,50 +178,20 @@ class Board extends Component {
         this.props.resetApplication();
     }
 
-    drawPathResult() {
-
-        const pathResult = this.props.pathResult;
-        const pathResultLength = pathResult.length;
-        const currentIndex = this.props.nextItemIndex;
-
-        let newIndex = 0;
-
-
-        if (currentIndex === 0) {
-            this.createSquare(pathResult[currentIndex + 1], 'pink');
-            clearInterval(this.timerID);
-        }
-        else if (currentIndex === pathResultLength - 2) {
-            this.createSquare(pathResult[currentIndex], 'red');
-            newIndex = currentIndex - 1;
-        }
-        else {
-            this.createSquare(pathResult[currentIndex + 1], 'pink');
-            this.createSquare(pathResult[currentIndex], 'red');
-            newIndex = currentIndex - 1;
-        }
-
-        this.props.handleUpdateState({
-            nextItemIndex: newIndex
-        });
-    }
-
-    convertCoordinatesToPosition = (x, y, boardWidth, squaresPerWidth) => {
-        var scale = boardWidth / squaresPerWidth;
-        return Math.floor(x / scale) + squaresPerWidth * Math.floor(y / scale);
-    }
 
     render() {
-        var positionsSet = (this.state.startPositionSet & this.state.endPositionSet);
+        var positionsSet = (this.props.startPositionSet & this.props.endPositionSet);
         return (
             <div className="Board">
                 <canvas ref="canvas" width={this.props.boardWidth} height={this.props.boardWidth}
-                        onMouseDown={this.onMouseMove.bind(this)}
+                        onMouseDown={this.onMouseMove}
                         style={{borderWidth: '1px', borderStyle: 'outset', borderColor: '#000000'}}></canvas>
                 <BoardController positionsSet={positionsSet}
                                  typeSelectionChange={this.typeSelectionChange}
                                  squareNumberChange={this.squareNumberSelectionChange}
-                                 resetApplication={this.handleReset}/>
+                                 resetApplication={this.handleReset}
+                                 squareType={this.props.squareType}
+                                 squaresPerWidth={this.props.squaresPerWidth}/>
             </div>
         )
     }

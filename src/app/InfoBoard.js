@@ -6,6 +6,10 @@ class InfoBoard extends Component {
         super(props);
     }
 
+    componentDidMount() {
+        console.log('InfoBoard did mount');
+    }
+
     render() {
 
         return (<div className="InfoBoard">

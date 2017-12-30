@@ -11,68 +11,129 @@ class App extends Component {
 
         var tmpSquaresPerWidth = 10;
 
+        var tmpBoard = Array.from(new Array(tmpSquaresPerWidth * tmpSquaresPerWidth));
+
         this.state = {
             squaresPerWidth: tmpSquaresPerWidth,
             boardWidth: 400,
             pathResult: [],
             nextItemIndex: 0,
-            timerSet: false
+            timerSet: false,
+            squareType: '0',
+            board: tmpBoard,
+            startPositionSet: false,
+            endPositionSet: false,
+            startPosition: -1,
+            endPosition: -1,
+            selectStartPosition: true,
+            selectEndPosition: false,
+            selectObstaclePosition: false,
+            boardUpdateNeeded: true
         };
+
 
         this.updateStartPosition = this.updateStartPosition.bind(this);
         this.updateEndPosition = this.updateEndPosition.bind(this);
         this.updateObstaclePosition = this.updateObstaclePosition.bind(this);
+
+        this.selectingStartPosition = this.selectingStartPosition.bind(this);
+        this.selectingObstaclePosition = this.selectingObstaclePosition.bind(this);
+        this.selectingEndPosition = this.selectingEndPosition.bind(this);
+
         this.launchAStar = this.launchAStar.bind(this);
-        this.resetApplication = this.resetApplication.bind(this);
+        this.handleTimerCreation = this.handleTimerCreation.bind(this);
+        this.updateNextItemIndex = this.updateNextItemIndex.bind(this);
+        this.gridUpdated = this.gridUpdated.bind(this);
+
         this.handleSquareNumberChange = this.handleSquareNumberChange.bind(this);
-        this.handleUpdateState = this.handleUpdateState.bind(this);
-        this.manhattanDistance = this.manhattanDistance.bind(this);
+        this.resetApplication = this.resetApplication.bind(this);
     }
 
 
+    componentDidMount() {
+        if (this.props.boardUpdateNeeded) {
+            this.setState({boardUpdateNeeded: false});
+        }
+    }
+
     updateStartPosition(index) {
-        const tmpBoard = this.state.board;
+        const tmpBoard = this.state.board.slice();
         tmpBoard[index] = 1;
-        
-        this.setState((prevState, props) => {
-            return {
-                startPosition: index,
-                board: tmpBoard
-            };
+        this.setState({
+            startPosition: index,
+            startPositionSet: true,
+            board: tmpBoard
+        }, () => {
+            if (this.state.startPositionSet && this.state.endPositionSet) {
+                this.selectingObstaclePosition();
+            }
         });
     }
 
     updateEndPosition(index) {
-        const tmpBoard = this.state.board;
+        const tmpBoard = this.state.board.slice();
         tmpBoard[index] = 3;
-
         this.setState({
             endPosition: index,
+            endPositionSet: true,
             board: tmpBoard
+        }, () => {
+            if (this.state.startPositionSet && this.state.endPositionSet) {
+                this.selectingObstaclePosition();
+            }
         });
     }
 
     updateObstaclePosition(index) {
-        const tmpBoard = this.state.board;
+        const tmpBoard = this.state.board.slice();
         tmpBoard[index] = 2;
-
         this.setState({
             board: tmpBoard
         });
     }
 
-    componentDidMount() {
-        console.log('App did mount');
-        if (this.props.boardUpdateNeeded) {
-            this.setState({boardUpdateNeeded: false});
-        }
+    selectingStartPosition() {
+        this.setState(
+            {
+                selectStartPosition: true,
+                selectObstaclePosition: false,
+                selectEndPosition: false
+            });
     }
 
-    componentWillUpdate() {
-        console.log('App will update');
-        if (this.props.boardUpdateNeeded) {
-            this.setState({boardUpdateNeeded: false});
-        }
+    selectingObstaclePosition() {
+        this.setState(
+            {
+                selectStartPosition: false,
+                selectObstaclePosition: true,
+                selectEndPosition: false
+            });
+    }
+
+    selectingEndPosition() {
+        this.setState(
+            {
+                selectStartPosition: false,
+                selectObstaclePosition: false,
+                selectEndPosition: true
+            });
+    }
+
+    handleTimerCreation() {
+        this.setState({
+            nextItemIndex: this.state.pathResult.length - 2,
+            timerSet: true
+        });
+    }
+
+    updateNextItemIndex(index) {
+        this.setState({
+            nextItemIndex: index
+        });
+    }
+
+    gridUpdated() {
+        this.setState({boardUpdateNeeded: false});
     }
 
     manhattanDistance(x, y) {
@@ -122,7 +183,7 @@ class App extends Component {
             var currentNodeIndex = this.findNodeWithMinimalCost(openList, fScore);
 
             if (currentNodeIndex === goal) {
-                return this.reconstruct_path(cameFrom, currentNodeIndex);
+                return this.reconstructPath(cameFrom, currentNodeIndex);
             }
 
             openList.splice(openList.indexOf(currentNodeIndex), 1);
@@ -155,7 +216,7 @@ class App extends Component {
         return null;
     }
 
-    reconstruct_path(cameFrom, current) {
+    reconstructPath(cameFrom, current) {
         var totalPath = [current];
 
         while (cameFrom[current] !== undefined) {
@@ -243,6 +304,8 @@ class App extends Component {
             board: tmpBoard,
             startPosition: -1,
             endPosition: -1,
+            startPositionSet: false,
+            endPositionSet: false,
             pathResult: [],
             selectStartPosition: true,
             selectEndPosition: false,
@@ -253,12 +316,15 @@ class App extends Component {
         });
     }
 
-    handleUpdateState(object, callback) {
-        this.setState(object, callback);
+    handleSquareNumberChange(newSquareNumber) {
+        this.setState({
+            boardUpdateNeeded: true
+        }, () => this.setState({squaresPerWidth: newSquareNumber}, () => this.resetApplication()));
     }
 
-    handleSquareNumberChange(newSquareNumber) {
-        this.setState({squaresPerWidth: newSquareNumber}, () => this.resetApplication());
+    convertCoordinatesToPosition = (x, y) => {
+        var scale = this.state.boardWidth / this.state.squaresPerWidth;
+        return Math.floor(x / scale) + this.state.squaresPerWidth * Math.floor(y / scale);
     }
 
     render() {
@@ -267,23 +333,38 @@ class App extends Component {
         return (
             <div className="App">
                 <Header/>
-                <Board board={this.state.board}
-                       squaresPerWidth={this.state.squaresPerWidth}
-                       boardWidth={this.state.boardWidth}
-                       pathResult={this.state.pathResult}
-                       selectStartPosition={this.state.selectStartPosition}
-                       selectEndPosition={this.state.selectEndPosition}
-                       selectObstaclePosition={this.state.selectObstaclePosition}
-                       boardUpdateNeeded={this.state.boardUpdateNeeded}
-                       nextItemIndex={this.state.nextItemIndex}
-                       timerSet={this.state.timerSet}
-                       updateStartPosition={this.updateStartPosition}
-                       updateEndPosition={this.updateEndPosition}
-                       updateObstaclePosition={this.updateObstaclePosition}
-                       convertCoordinatesToPosition={this.convertCoordinatesToPosition}
-                       resetApplication={this.resetApplication}
-                       handleSquareNumberChange={this.handleSquareNumberChange}
-                       handleUpdateState={this.handleUpdateState}/>
+                <Board
+                    squaresPerWidth={this.state.squaresPerWidth}
+                    boardWidth={this.state.boardWidth}
+                    board={this.state.board}
+                    pathResult={this.state.pathResult}
+                    nextItemIndex={this.state.nextItemIndex}
+                    timerSet={this.state.timerSet}
+                    boardUpdateNeeded={this.state.boardUpdateNeeded}
+
+                    startPositionSet={this.state.startPositionSet}
+                    endPositionSet={this.state.endPositionSet}
+
+                    selectStartPosition={this.state.selectStartPosition}
+                    selectObstaclePosition={this.state.selectObstaclePosition}
+                    selectEndPosition={this.state.selectEndPosition}
+
+                    updateStartPosition={this.updateStartPosition}
+                    updateEndPosition={this.updateEndPosition}
+                    updateObstaclePosition={this.updateObstaclePosition}
+
+                    selectingStartPosition={this.selectingStartPosition}
+                    selectingObstaclePosition={this.selectingObstaclePosition}
+                    selectingEndPosition={this.selectingEndPosition}
+
+                    convertCoordinatesToPosition={this.convertCoordinatesToPosition}
+                    resetApplication={this.resetApplication}
+                    handleSquareNumberChange={this.handleSquareNumberChange}
+
+                    handleTimerCreation={this.handleTimerCreation}
+                    updateNextItemIndex={this.updateNextItemIndex}
+                    gridUpdated={this.gridUpdated}
+                />
                 <InfoBoard info={info}/>
                 <button type="button" onClick={this.launchAStar}>Launch the simulation !</button>
             </div>

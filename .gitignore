@@ -4,5 +4,6 @@ package-lock.json
 
 node_modules
 
+.idea/*
 
-out
+dist
