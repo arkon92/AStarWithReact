@@ -10,10 +10,6 @@ class BoardController extends Component {
         this.handleResetApplication = this.handleResetApplication.bind(this);
     }
 
-    componentDidMount() {
-        console.log('BoardController did mount');
-    }
-
     handleChangeType(event) {
         event.persist();
         this.props.typeSelectionChange(parseInt(event.target.value, 10));
