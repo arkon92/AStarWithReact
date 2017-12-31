@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
 import BoardController from './BoardController';
+import styles from './css/Board.css';
+import InfoBoard from "./InfoBoard";
 
 class Board extends Component {
 
@@ -26,13 +28,13 @@ class Board extends Component {
             return;
         }
 
-        if (this.props.selectStartPosition && !this.props.startPositionSet) {
+        if (this.props.squareType === '0' && this.props.startPosition === -1) {
             this.updateStartPosition(convertedCoordinates);
         }
-        else if (this.props.selectEndPosition && !this.props.endPositionSet) {
+        else if (this.props.squareType === '2' && this.props.endPosition === -1) {
             this.updateEndPosition(convertedCoordinates);
         }
-        else if (this.props.selectObstaclePosition) {
+        else if (this.props.squareType === '1') {
             this.updateObstaclePosition(convertedCoordinates);
         }
     }
@@ -171,10 +173,6 @@ class Board extends Component {
         this.createGridPattern();
         clearInterval(this.timerID);
         this.timerID = undefined
-        this.setState({
-            startPositionSet: false,
-            endPositionSet: false
-        });
         this.props.resetApplication();
     }
 
@@ -183,15 +181,19 @@ class Board extends Component {
         var positionsSet = (this.props.startPositionSet & this.props.endPositionSet);
         return (
             <div className="Board">
-                <canvas ref="canvas" width={this.props.boardWidth} height={this.props.boardWidth}
-                        onMouseDown={this.onMouseMove}
-                        style={{borderWidth: '1px', borderStyle: 'outset', borderColor: '#000000'}}></canvas>
-                <BoardController positionsSet={positionsSet}
-                                 typeSelectionChange={this.typeSelectionChange}
-                                 squareNumberChange={this.squareNumberSelectionChange}
-                                 resetApplication={this.handleReset}
-                                 squareType={this.props.squareType}
-                                 squaresPerWidth={this.props.squaresPerWidth}/>
+                <p className={styles.centered_grid}>
+                    <canvas className={styles.grid} ref="canvas" width={this.props.boardWidth}
+                            height={this.props.boardWidth}
+                            onMouseDown={this.onMouseMove}></canvas>
+                </p>
+                <InfoBoard info={this.props.info}/>
+                <BoardController
+                    positionsSet={positionsSet}
+                    typeSelectionChange={this.typeSelectionChange}
+                    squareNumberChange={this.squareNumberSelectionChange}
+                    resetApplication={this.handleReset}
+                    squareType={this.props.squareType}
+                    squaresPerWidth={this.props.squaresPerWidth}/>
             </div>
         )
     }

@@ -1,8 +1,7 @@
 import React, {Component} from 'react';
-import './App.css';
 import Header from './Header.js';
 import Board from "./Board.js";
-import InfoBoard from './InfoBoard.js';
+import styles from './css/App.css';
 
 class App extends Component {
 
@@ -21,13 +20,8 @@ class App extends Component {
             timerSet: false,
             squareType: '0',
             board: tmpBoard,
-            startPositionSet: false,
-            endPositionSet: false,
             startPosition: -1,
             endPosition: -1,
-            selectStartPosition: true,
-            selectEndPosition: false,
-            selectObstaclePosition: false,
             boardUpdateNeeded: true
         };
 
@@ -61,11 +55,12 @@ class App extends Component {
         tmpBoard[index] = 1;
         this.setState({
             startPosition: index,
-            startPositionSet: true,
             board: tmpBoard
         }, () => {
-            if (this.state.startPositionSet && this.state.endPositionSet) {
+            if (this.state.startPosition !== -1 && this.state.endPosition !== -1) {
                 this.selectingObstaclePosition();
+            } else {
+                this.selectingEndPosition();
             }
         });
     }
@@ -75,11 +70,12 @@ class App extends Component {
         tmpBoard[index] = 3;
         this.setState({
             endPosition: index,
-            endPositionSet: true,
             board: tmpBoard
         }, () => {
-            if (this.state.startPositionSet && this.state.endPositionSet) {
+            if (this.state.startPosition !== -1 && this.state.endPosition !== -1) {
                 this.selectingObstaclePosition();
+            } else {
+                this.selectingStartPosition();
             }
         });
     }
@@ -95,27 +91,21 @@ class App extends Component {
     selectingStartPosition() {
         this.setState(
             {
-                selectStartPosition: true,
-                selectObstaclePosition: false,
-                selectEndPosition: false
+                squareType: '0'
             });
     }
 
     selectingObstaclePosition() {
         this.setState(
             {
-                selectStartPosition: false,
-                selectObstaclePosition: true,
-                selectEndPosition: false
+                squareType: '1'
             });
     }
 
     selectingEndPosition() {
         this.setState(
             {
-                selectStartPosition: false,
-                selectObstaclePosition: false,
-                selectEndPosition: true
+                squareType: '2'
             });
     }
 
@@ -328,7 +318,19 @@ class App extends Component {
     }
 
     render() {
-        const info = this.state.startPosition + '|' + this.state.endPosition;
+        let info = 'Start position: ';
+        if (this.state.startPosition !== -1) {
+            info = info + this.state.startPosition
+        } else {
+            info = info + 'unset'
+        }
+
+        info = info + ' End position: '
+        if (this.state.endPosition !== -1) {
+            info = info + this.state.endPosition;
+        } else {
+            info = info + 'unset'
+        }
 
         return (
             <div className="App">
@@ -337,17 +339,15 @@ class App extends Component {
                     squaresPerWidth={this.state.squaresPerWidth}
                     boardWidth={this.state.boardWidth}
                     board={this.state.board}
+                    info={info}
                     pathResult={this.state.pathResult}
                     nextItemIndex={this.state.nextItemIndex}
                     timerSet={this.state.timerSet}
                     boardUpdateNeeded={this.state.boardUpdateNeeded}
+                    squareType={this.state.squareType}
 
-                    startPositionSet={this.state.startPositionSet}
-                    endPositionSet={this.state.endPositionSet}
-
-                    selectStartPosition={this.state.selectStartPosition}
-                    selectObstaclePosition={this.state.selectObstaclePosition}
-                    selectEndPosition={this.state.selectEndPosition}
+                    startPosition={this.state.startPosition}
+                    endPosition={this.state.endPosition}
 
                     updateStartPosition={this.updateStartPosition}
                     updateEndPosition={this.updateEndPosition}
@@ -365,8 +365,10 @@ class App extends Component {
                     updateNextItemIndex={this.updateNextItemIndex}
                     gridUpdated={this.gridUpdated}
                 />
-                <InfoBoard info={info}/>
-                <button type="button" onClick={this.launchAStar}>Launch the simulation !</button>
+                <p className={styles.launch_algorithm}>
+                    <button className={styles.button} type="button" onClick={this.launchAStar}>Launch the algorithm
+                    </button>
+                </p>
             </div>
         );
     }

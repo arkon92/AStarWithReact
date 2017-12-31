@@ -1,0 +1,9 @@
+.info {
+    margin-left:3%;
+    margin-top:1%;
+    width: 15%;
+    float:left;
+    display:inline-block;
+    vertical-align: top;
+    border-style: groove;
+}

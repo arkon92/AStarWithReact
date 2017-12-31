@@ -1,20 +1,15 @@
 import React, {Component} from 'react';
+import styles from './css/InfoBoard.css';
 
-class InfoBoard extends Component {
+const InfoBoard = (props) => {
 
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-
-        return (<div className="InfoBoard">
+    return (
+        <div className={styles.info}>
+            <p>Information:</p>
             <ul>
-                {this.props.info}
+                {props.info}
             </ul>
         </div>)
-
-    }
 
 }
 

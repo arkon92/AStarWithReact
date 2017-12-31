@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
+import styles from './css/Header.css';
 
-const Header = ({props}) => {
+const Header = ({}) => {
     return (
-        <div className="Header">
-            <h1>A*</h1>
+        <div>
+            <h1 className={styles.title}>A*</h1>
         </div>);
 }
 

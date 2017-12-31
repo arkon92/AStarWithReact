@@ -1,0 +1,18 @@
+.buttons {
+    margin-right:3%;
+    margin-top:1%;
+    float: right;
+    display:inline-block;
+}
+
+.button {
+    margin-top:2%;
+    font-size: 30px;
+}
+
+.reset_button {
+    margin-top:2%;
+    font-size: 30px;
+    background-color: #f44336;
+    border: 2px solid #af0b01;
+}

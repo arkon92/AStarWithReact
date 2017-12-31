@@ -1,4 +1,6 @@
 import React, {Component} from 'react';
+import styles from './css/BoardController.css';
+
 
 class BoardController extends Component {
 
@@ -26,32 +28,44 @@ class BoardController extends Component {
 
     render() {
         if (this.props.positionsSet) {
-            return (<div className="BoardController">
-                <select value={this.props.squareType} onChange={this.handleChangeType}>
-                    <option value="1">Obstacle</option>
-                </select>
-                <button type="button" onClick={this.handleResetApplication}>Reset!</button>
-                <select value={this.props.squaresPerWidth} onChange={this.handleChangeSquareNumber}>
-                    <option value="10">10x10</option>
-                    <option value="20">20x20</option>
-                    <option value="30">30x30</option>
-                </select>
-            </div>);
-        }
-        else {
-            return (
-                <div className="BoardController">
-                    <select value={this.props.squareType} onChange={this.handleChangeType}>
-                        <option value="0">Start position</option>
+            return (<div className={styles.buttons}>
+                <div>
+                    <select className={styles.button} value={this.props.squareType} onChange={this.handleChangeType}>
                         <option value="1">Obstacle</option>
-                        <option value="2">End position</option>
                     </select>
-                    <button type="button" onClick={this.handleResetApplication}>Reset!</button>
-                    <select value={this.props.squaresPerWidth} onChange={this.handleChangeSquareNumber}>
+                </div>
+                <div>
+                    <select className={styles.button} value={this.props.squaresPerWidth} onChange={this.handleChangeSquareNumber}>
                         <option value="10">10x10</option>
                         <option value="20">20x20</option>
                         <option value="30">30x30</option>
                     </select>
+                </div>
+                <div>
+                    <button className={styles.reset_button} type="button" onClick={this.handleResetApplication}>Reset</button>
+                </div>
+            </div>);
+        }
+        else {
+            return (
+                <div className={styles.buttons}>
+                    <div>
+                        <select className={styles.button} value={this.props.squareType} onChange={this.handleChangeType} >
+                            <option value="0">Start position</option>
+                            <option value="1">Obstacle</option>
+                            <option value="2">End position</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select className={styles.button} value={this.props.squaresPerWidth} onChange={this.handleChangeSquareNumber}>
+                            <option value="10">10x10</option>
+                            <option value="20">20x20</option>
+                            <option value="30">30x30</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button className={styles.reset_button} type="button" onClick={this.handleResetApplication}>Reset</button>
+                    </div>
                 </div>
             );
         }

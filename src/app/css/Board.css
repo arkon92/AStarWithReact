@@ -1,0 +1,9 @@
+.centered_grid {
+    text-align: center;
+}
+
+.grid {
+    border-width: 1px;
+    border-style: outset;
+    borderColor: #000000;
+}
